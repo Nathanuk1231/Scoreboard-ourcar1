@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game Leaderboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      padding: 2rem;
+      font-size: 2.5rem;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .container {
+      padding: 2rem;
+    }
+    form {
+      margin-bottom: 2rem;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 0.7rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+    }
+    button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background: #00e676;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #00c853;
+    }
+    table {
+      width: 90%;
+      margin: auto;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 1rem;
+      font-size: 1.1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    th {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <header>🏆 Game Leaderboard</header>
+  <div class="container">
+    <form id="scoreForm">
+      <input type="text" id="name" placeholder="Your Name" required />
+      <input type="number" id="score" placeholder="Your Score" required />
+      <button type="submit">Submit Score</button>
+    </form>
+
+    <h2>Top Players</h2>
+    <table id="leaderboard">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic leaderboard rows -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const webhookURL = "https://discord.com/api/webhooks/1396526916613177384/lLwfA-ta7_bIgog17dFnRmsaXkU5en9yDso6OjMLpnh4chX5LICP0-lcLgBwEFMnavSG";
+    const form = document.getElementById("scoreForm");
+    const leaderboardBody = document.querySelector("#leaderboard tbody");
+
+    // Store scores locally
+    let leaderboardData = [];
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const score = parseInt(document.getElementById("score").value);
+
+      if (!name || isNaN(score)) return;
+
+      // Send to Discord webhook
+      await fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: `📣 **${name}** just scored **${score}** points!`
+        })
+      });
+
+      // Add to local leaderboard
+      leaderboardData.push({ name, score });
+      leaderboardData.sort((a, b) => b.score - a.score); // Descending
+      renderLeaderboard();
+
+      // Clear input
+      form.reset();
+    });
+
+    function renderLeaderboard() {
+      leaderboardBody.innerHTML = "";
+      leaderboardData.forEach((entry, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>#${index + 1}</td>
+          <td>${entry.name}</td>
+          <td>${entry.score}</td>
+        `;
+        leaderboardBody.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
